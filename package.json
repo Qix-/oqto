@@ -1,0 +1,37 @@
+{
+	"name": "oqto",
+	"version": "0.0.1",
+	"description": "Build everything.",
+	"author": "Qix <i.am.qix@gmail.com> (http://github.com/Qix-)",
+	"respository": {
+		"type": "git",
+		"url": "https://github.com/Qix-/oqto.git"
+		},
+	"keywords": [
+		"build",
+		"system",
+		"oqto",
+		"task",
+		"project",
+		"pipe",
+		"tool",
+		"make",
+		"rake",
+		"jake"
+		],
+
+	"bugs": "https://github.com/Qix-/oqto/issues",
+	"license": "BSD-3-Clause",
+
+	"main": "./lib/oqto/oqto-lib.js",
+	"bin": "./bin/oqto.js",
+
+	"preferGlobal": true,
+
+	"publishConfig": {
+		"color": "always",
+		"dev": false,
+		"heading": "oqto",
+		"optional": false
+		}
+}
