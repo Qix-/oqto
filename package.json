@@ -1,37 +1,42 @@
 {
-	"name": "oqto",
-	"version": "0.0.1",
-	"description": "Build everything.",
-	"author": "Qix <i.am.qix@gmail.com> (http://github.com/Qix-)",
-	"respository": {
-		"type": "git",
-		"url": "https://github.com/Qix-/oqto.git"
-		},
-	"keywords": [
-		"build",
-		"system",
-		"oqto",
-		"task",
-		"project",
-		"pipe",
-		"tool",
-		"make",
-		"rake",
-		"jake"
-		],
-
-	"bugs": "https://github.com/Qix-/oqto/issues",
-	"license": "BSD-3-Clause",
-
-	"main": "./lib/oqto/oqto-lib.js",
-	"bin": "./bin/oqto.js",
-
-	"preferGlobal": true,
-
-	"publishConfig": {
-		"color": "always",
-		"dev": false,
-		"heading": "oqto",
-		"optional": false
-		}
+  "name": "oqto",
+  "version": "0.0.1",
+  "description": "Build everything.",
+  "author": "Qix <i.am.qix@gmail.com> (http://github.com/Qix-)",
+  "respository": {
+    "type": "git",
+    "url": "https://github.com/Qix-/oqto.git"
+  },
+  "keywords": [
+    "build",
+    "system",
+    "oqto",
+    "task",
+    "project",
+    "pipe",
+    "tool",
+    "make",
+    "rake",
+    "jake"
+  ],
+  "bugs": "https://github.com/Qix-/oqto/issues",
+  "license": "BSD-3-Clause",
+  "main": "./lib/oqto/oqto-lib.js",
+  "bin": "./bin/oqto.js",
+  "preferGlobal": true,
+  "publishConfig": {
+    "color": "always",
+    "dev": false,
+    "heading": "oqto",
+    "optional": false
+  },
+  "devDependencies": {
+    "gulp": "^3.6.2",
+    "gulp-coffee": "^1.4.3",
+    "gulp-peg": "^0.1.1",
+    "gulp-rename": "^1.2.0",
+    "gulp-util": "^2.2.14",
+    "pegjs": "^0.8.0",
+    "pegjs-coffee-plugin": "^0.2.1"
+  }
 }
