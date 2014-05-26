@@ -1,6 +1,0 @@
-[submodule "deps/ace"]
-	path = deps/ace
-	url = git@github.com:ajaxorg/ace-builds.git
-[submodule "deps/ace-pegjs"]
-	path = deps/ace-pegjs
-	url = git@github.com:mstefaniuk/pegjs-ace-editor.git

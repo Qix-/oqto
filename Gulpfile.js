@@ -23,56 +23,6 @@ gulp.task('clean', function() {
 		.pipe(clean());
 });
 
-gulp.task('build-deps', function() {
-	console.log('Building dependencies (this might take a second...)');
-	gulp.src('')
-		.pipe(shell(
-			[
-				'npm install',
-				'bower install',
-				'grunt'
-			],
-			{cwd: process.cwd() + '/deps/ace-pegjs'}
-			));
-});
-
-// Gulp is stupid.
-gulp.task('dep-pegace', ['build-deps'], function() {
-	gulp.src('./deps/ace-pegjs/target/**/*')
-		.pipe(rename(function(path) {
-			path.dirname = path.dirname.replace('deps/ace-pegjs/target/', '')
-		}))
-		.pipe(gulp.dest('./dev/peg/ace-peg'));
-});
-
-// Gulp is really, really stupid.
-gulp.task('dep-ace', function() {
-	gulp.src('./deps/ace/src-noconflict/**/*')
-		.pipe(rename(function(path) {
-			path.dirname = path.dirname.replace('deps/ace/src-noconflict/', '')
-		}))
-		.pipe(gulp.dest('./dev/peg/ace'));
-});
-
-gulp.task('deps', ['dep-ace', 'dep-pegace'], function () {});
-
-gulp.task('src-dev-coffee', function() {
-	gulp.src('./src/dev/**/*.coffee')
-		.pipe(coffee())
-		.pipe(rename(function(path) {
-				path.dirname = path.dirname.replace('src/dev/', '')
-			}))
-		.pipe(gulp.dest('./dev/'));
-});
-
-gulp.task('src-dev', ['src-dev-coffee'], function() {
-	gulp.src('./src/dev/**/*')
-		.pipe(rename(function(path) {
-				path.dirname = path.dirname.replace('src/dev/', '')
-			}))
-		.pipe(gulp.dest('./dev/'));
-});
-
 gulp.task('src-lib', function() {
 	gulp.src('./src/lib/**/*.coffee')
 		.pipe(coffee())
@@ -91,8 +41,4 @@ gulp.task('src-bin', function() {
 		.pipe(gulp.dest('./bin/'));
 });
 
-gulp.task('src', ['src-dev', 'src-bin', 'src-lib'], function() {});
-
-gulp.task('default', ['clean'], function() {
-	gulp.start('deps', 'src');
-});
+gulp.task('default', ['src-bin', 'src-lib'], function() {});
