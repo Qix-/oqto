@@ -2,3 +2,4 @@
 /src/
 /deps/
 /dev/
+*.coffee
