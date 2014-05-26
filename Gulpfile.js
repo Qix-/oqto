@@ -53,4 +53,8 @@ gulp.task('src-grammar', function() {
 		.pipe(gulp.dest('lib/grammar'));
 });
 
+gulp.task('watch-grammar', function() {
+	gulp.watch('src/grammar/**/*.peg', ['src-grammar']);
+});
+
 gulp.task('default', ['src-bin', 'src-lib', 'src-grammar'], function() {});

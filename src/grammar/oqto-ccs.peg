@@ -3,6 +3,6 @@
  *         PEG.JS GRAMMAR
  */
 
-start ""
-	= 'a'
+start "an 'a'"
+	= ('a' / 'b')+
 	;

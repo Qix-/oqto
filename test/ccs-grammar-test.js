@@ -11,5 +11,5 @@ fs.readFile('./ccs-grammar-example.ccs', function(err, data) {
 	}
 
 	var results = CCS.parse(data.toString()) || [];
-	console.log(JSON.stringify(results));
+	console.log(util.inspect(results, {colors: true}));
 });
