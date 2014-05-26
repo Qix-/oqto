@@ -1,0 +1,8 @@
+/**
+ * OQTO CASCADING CONFIGURATION SHEET
+ *         PEG.JS GRAMMAR
+ */
+
+start ""
+	= 'a'
+	;

@@ -8,10 +8,12 @@
 
 var gulp = require('gulp');
 var coffee = require('gulp-coffee');
+var pegcoffee = require('pegjs-coffee-plugin');
 var peg = require('gulp-peg');
 var rename = require('gulp-rename');
 var clean = require('gulp-clean');
 var shell = require('gulp-shell');
+var preprocess = require('gulp-preprocess');
 
 gulp.task('clean', function() {
 	gulp.src(
@@ -29,7 +31,7 @@ gulp.task('src-lib', function() {
 		.pipe(rename(function(path) {
 				path.dirname = path.dirname.replace('src/lib/', '')
 			}))
-		.pipe(gulp.dest('./lib/'));
+		.pipe(gulp.dest('lib'));
 });
 
 gulp.task('src-bin', function() {
@@ -38,7 +40,17 @@ gulp.task('src-bin', function() {
 		.pipe(rename(function(path) {
 				path.dirname = path.dirname.replace('src/', '')
 			}))
-		.pipe(gulp.dest('./bin/'));
+		.pipe(gulp.dest('bin'));
 });
 
-gulp.task('default', ['src-bin', 'src-lib'], function() {});
+gulp.task('src-grammar', function() {
+	gulp.src('./src/grammar/oqto-ccs.peg')
+		.pipe(preprocess())
+		.pipe(peg({plugins:[pegcoffee]}))
+		.pipe(rename(function(path) {
+				path.dirname = path.dirname.replace('src/', '')
+			}))
+		.pipe(gulp.dest('lib/grammar'));
+});
+
+gulp.task('default', ['src-bin', 'src-lib', 'src-grammar'], function() {});
