@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Build everything.",
   "author": "Qix <i.am.qix@gmail.com> (http://github.com/Qix-)",
-  "respository": {
+  "repository": {
     "type": "git",
     "url": "https://github.com/Qix-/oqto.git"
   },
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "gulp": "^3.6.2",
+    "gulp-clean": "^0.3.0",
     "gulp-coffee": "^1.4.3",
     "gulp-peg": "^0.1.1",
     "gulp-rename": "^1.2.0",
