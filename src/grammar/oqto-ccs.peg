@@ -3,22 +3,40 @@
  *         PEG.JS GRAMMAR
  */
 
+{
+	var $ = [];
+}
+
 start "ccs document"
-	= selector
+	= comment
+	;
+
+/****************************************
+ * INCLUSIONS
+ ***************************************/
+// @include ./tokens.peg
+
+/****************************************
+ * DIRECTIVES
+ ***************************************/
+directive "directive"
+	= '@' directive_token
+	  _ value_list
+	  _? ';'
 	;
 
 /****************************************
  * SELECTOR IDENTIFIER RULES
  ***************************************/
 selector "selector"
-	= env_selector
+	= env_selector env_selector_args?
 	/ task_selector
 	/ class_selector
 	/ glob_selector
 	;
 
 env_selector "environment selector"
-	= '@' basic_identifier
+	= '@' environment_token
 	;
 
 task_selector "task selector"
@@ -33,11 +51,31 @@ glob_selector "glob selector"
 	= double_string
 	;
 
+env_selector_args "environment selector arguments"
+	= '(' _? value (_ value)* _? ')'
+	; 
+
 /****************************************
  * BASIC RULES
  ***************************************/
+value_list "value list"
+	= init:value subs:(_ val:value {return val})*
+		{return [init].concat(subs)}
+	;
+
+value "value"
+	= string
+	/ digits:$([0-9]+ &[^0-9])
+		{return parseInt(digits)}
+	/ ('true' / 'yes' / 'on')
+		{return true}
+	/ ('false' / 'no' / 'off')
+		{return false}
+	/ $([a-z\-_]i [a-z0-9\-_]i* &[^a-z\-_0-9]i)
+	;
+
 basic_identifier "identifier"
-	= $(i:[A-Za-z\-\_] j:[A-Za-z\-_0-9]*)
+	= $([a-z\-\_]i [a-z\-_0-9]i*)
 	;
 
 string "string"
@@ -46,15 +84,18 @@ string "string"
 	;
 
 single_string "single quoted string"
-	= '\'' string:$(escape_sequence / [^'])* '\'' {string}
+	= '\'' string:$(escape_sequence / [^'])* '\''
+		{return string}
 	;
 
 double_string "double quoted string"
-	= '"' string:$(escape_sequence / [^"])* '"' {string}
+	= '"' string:$(escape_sequence / [^"])* '"'
+		{return string}
 	;
 	
 escape_sequence "escape sequence"
-	= '\\' escape:escape { escape }
+	= '\\' escape:escape
+		{return escape}
 	;
 
 escape "escape code"
@@ -69,11 +110,11 @@ escape "escape code"
 	/ 't' { '\t' }
 	/ 'e' { '\x1b' }
 	/ 'u' digits:$(hex_digit hex_digit hex_digit hex_digit)
-		{ String.fromCharCode (parseInt digits, 16) }
+		{return String.fromCharCode(parseInt(digits, 16))}
 	/ 'x' digits:$(hex_digit hex_digit)
-		{ String.fromCharCode (parseInt digits, 16) }
+		{return String.fromCharCode(parseInt(digits, 16)) }
 	/ digits:$(octal_digit octal_digit octal_digit)
-		{ String.fromCharCode (parseInt digits, 8) }
+		{return String.fromCharCode(parseInt(digits, 8)) }
 	;
 
 octal_digit "octal digit"
@@ -81,9 +122,14 @@ octal_digit "octal digit"
 	;
 
 hex_digit "hexadecimal digit"
-	= [A-Fa-f0-9]
+	= [a-f0-9]i
+	;
+
+comment "comment"
+	= '/*' (!'*/' .)+ '*/'
+		{}
 	;
 
 _ "whitespace"
-	= (' ' / [\r\n\f\t])+ {}
+	= ([ \r\n\f\t])+ {}
 	;

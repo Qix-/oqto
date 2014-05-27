@@ -46,7 +46,7 @@ gulp.task('src-bin', function() {
 gulp.task('src-grammar', function() {
 	gulp.src('./src/grammar/oqto-ccs.peg')
 		.pipe(preprocess())
-		.pipe(peg({plugins:[pegcoffee]}))
+		.pipe(peg(/*{plugins:[pegcoffee]}*/))
 		.pipe(rename(function(path) {
 				path.dirname = path.dirname.replace('src/', '')
 			}))
