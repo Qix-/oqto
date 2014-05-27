@@ -67,6 +67,7 @@ escape "escape code"
 	/ 'n' { '\n' }
 	/ 'r' { '\r' }
 	/ 't' { '\t' }
+	/ 'e' { '\x1b' }
 	/ 'u' digits:$(hex_digit hex_digit hex_digit hex_digit)
 		{ String.fromCharCode (parseInt digits, 16) }
 	/ 'x' digits:$(hex_digit hex_digit)
