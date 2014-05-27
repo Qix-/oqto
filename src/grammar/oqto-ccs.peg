@@ -3,6 +3,86 @@
  *         PEG.JS GRAMMAR
  */
 
-start "an 'a'"
-	= ('a' / 'b')+
+start "ccs document"
+	= selector
+	;
+
+/****************************************
+ * SELECTOR IDENTIFIER RULES
+ ***************************************/
+selector "selector"
+	= env_selector
+	/ task_selector
+	/ class_selector
+	/ glob_selector
+	;
+
+env_selector "environment selector"
+	= '@' basic_identifier
+	;
+
+task_selector "task selector"
+	= '#' basic_identifier
+	;
+
+class_selector "class selector"
+	= '.' basic_identifier
+	;
+
+glob_selector "glob selector"
+	= double_string
+	;
+
+/****************************************
+ * BASIC RULES
+ ***************************************/
+basic_identifier "identifier"
+	= $(i:[A-Za-z\-\_] j:[A-Za-z\-_0-9]*)
+	;
+
+string "string"
+	= double_string
+	/ single_string
+	;
+
+single_string "single quoted string"
+	= '\'' string:$(escape_sequence / [^'])* '\'' {string}
+	;
+
+double_string "double quoted string"
+	= '"' string:$(escape_sequence / [^"])* '"' {string}
+	;
+	
+escape_sequence "escape sequence"
+	= '\\' escape:escape { escape }
+	;
+
+escape "escape code"
+	= '"'
+	/ '\''
+	/ '\\'
+	/ '/'
+	/ 'b' { '\b' }
+	/ 'f' { '\f' }
+	/ 'n' { '\n' }
+	/ 'r' { '\r' }
+	/ 't' { '\t' }
+	/ 'u' digits:$(hex_digit hex_digit hex_digit hex_digit)
+		{ String.fromCharCode (parseInt digits, 16) }
+	/ 'x' digits:$(hex_digit hex_digit)
+		{ String.fromCharCode (parseInt digits, 16) }
+	/ digits:$(octal_digit octal_digit octal_digit)
+		{ String.fromCharCode (parseInt digits, 8) }
+	;
+
+octal_digit "octal digit"
+	= [0-8]
+	;
+
+hex_digit "hexadecimal digit"
+	= [A-Fa-f0-9]
+	;
+
+_ "whitespace"
+	= (' ' / [\r\n\f\t])+ {}
 	;
