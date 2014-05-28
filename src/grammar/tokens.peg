@@ -11,11 +11,3 @@ environment_token "environment selector token"
 	/ 'system'		/* type */
 	/ 'release'		/* release */
 	;
-
-/**
- * Directive tokens
- */
-directive_token "directive token"
-	= 'import'		/* include a file */
-	/ 'use'			/* use a module */
-	;

@@ -39,6 +39,7 @@
  */
 @vendor msvc11 as ms;
 
+
 /**
  * When the configuration value
  *	`debug` is true, we'll log
@@ -264,5 +265,5 @@ $debug=true {
  *	used.
  */
 *::after {
-	` Done!;
+	` Done!
 }
