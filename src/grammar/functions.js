@@ -10,6 +10,11 @@ var $U = function(tipo) {
 	return tipo != 'undefined';
 };
 
+var charCode = function(digits, radix) {
+	return String.fromCharCode(
+		parseInt(digits, radix));
+};
+
 /****************************************
  * OPERATOR FUNCTIONS
  ***************************************/

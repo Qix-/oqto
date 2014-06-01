@@ -24,12 +24,12 @@ start
 statement
 	= comment
 	/ directive:statement_directive
-		{ return {type: 'directive', directive: directive} }
+		{return {type: 'directive', directive: directive}}
 	;
 
 statement_directive "directive"
 	= '@' directive:directive _? ';'
-		{ return directive }
+		{return directive}
 
 /****************************************
  * RULE
@@ -63,15 +63,15 @@ directive
 
 directive_use "directive: use"
 	= 'use' _ module:value name:(_ 'as' _ name:value {return name})?
-		{ return {name: module, alias: ($U(typeof name) ? name : null)} }
+		{return {name: module, alias: ($U(typeof name) ? name : null)}}
 
 directive_import "directive: import"
 	= 'import' _ imp:value
-		{ return {imp: imp} }
+		{return {imp: imp}}
 
 directive_vendor "directive: vendor"
 	= 'vendor' _ prefix:value name:(_ 'as' _ name:value {return name})?
-		{ return {prefix: prefix, alias: ($U(typeof name) ? name : null)} }
+		{return {prefix: prefix, alias: ($U(typeof name) ? name : null)}}
 
 /****************************************
  * SELECTOR IDENTIFIER RULES
@@ -128,15 +128,15 @@ attr_operator "attribute operator"
 
 attr_operator_basic "basic attribute operator"
 	= '='
-		{ return operator_eq; }
+		{return operator_eq}
 	/ '*='
-		{ return operator_contains; }
+		{return operator_contains}
 	/ '~='
-		{ return operator_inlist; }
+		{return operator_inlist}
 	/ '^='
-		{ return operator_begins; }
+		{return operator_begins}
 	/ '$='
-		{ return operator_ends; }
+		{return operator_ends}
 	;
 
 /****************************************
@@ -194,11 +194,11 @@ escape "escape code"
 	/ 't' { '\t' }
 	/ 'e' { '\x1b' }
 	/ 'u' digits:$(hex_digit hex_digit hex_digit hex_digit)
-		{return String.fromCharCode(parseInt(digits, 16))}
+		{return charCode(digits, 16)}
 	/ 'x' digits:$(hex_digit hex_digit)
-		{return String.fromCharCode(parseInt(digits, 16)) }
+		{return charCode(digits, 16)}
 	/ digits:$(octal_digit octal_digit octal_digit)
-		{return String.fromCharCode(parseInt(digits, 8)) }
+		{return charCode(digits, 8)}
 	;
 
 octal_digit "octal digit"
