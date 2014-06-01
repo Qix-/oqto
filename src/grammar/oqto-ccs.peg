@@ -27,23 +27,30 @@ statement
 		{return {type: 'directive', directive: directive}}
 	;
 
-statement_directive "directive"
+statement_directive
 	= '@' directive:directive _? ';'
 		{return directive}
 
 /****************************************
- * RULE
+ * RULES
  ***************************************/
-rule_multiple
-	= first:rule_single
-	  other:(_? ',' _? rule:rule_single {return rule;})*
+rule_node
+	= 
+
+
+/****************************************
+ * CONDITIONALS
+ ***************************************/
+conditional_multiple
+	= first:conditional_single
+	  other:(_? ',' _? rule:conditional_single {return rule;})*
 	  	{
 	  		if ($U(typeof other))
 	  			return [first].concat(other);
 	  		return [first];
 	  	}
 
-rule_single
+conditional_single
 	= first:selector other:(_ selector)*
 		{
 			if ($U(typeof other))
@@ -61,15 +68,15 @@ directive
 	/ directive_vendor
 	;
 
-directive_use "directive: use"
+directive_use
 	= 'use' _ module:value name:(_ 'as' _ name:value {return name})?
 		{return {name: module, alias: ($U(typeof name) ? name : null)}}
 
-directive_import "directive: import"
+directive_import
 	= 'import' _ imp:value
 		{return {imp: imp}}
 
-directive_vendor "directive: vendor"
+directive_vendor
 	= 'vendor' _ prefix:value name:(_ 'as' _ name:value {return name})?
 		{return {prefix: prefix, alias: ($U(typeof name) ? name : null)}}
 
@@ -81,43 +88,49 @@ selector
 	/ selector_task
 	/ selector_class
 	/ selector_glob
+	/ selector_config
+	/ selector_task_result
 	;
 
-selector_env "selector: environment"
+selector_env
 	= '@' selector_env_token
 	;
 
-selector_env_token "environment selector token"
+selector_env_token
 	= 'arch'		/* arch */
 	/ 'os'			/* platform */
 	/ 'system'		/* type */
 	/ 'release'		/* release */
 	;
 
-selector_env_args "environment selector arguments"
+selector_env_args
 	= '(' _? value (_ value)* _? ')'
 	;
 
-selector_task "selector: task"
+selector_task
 	= '#' basic_identifier
 	;
 
-selector_class "selector: class"
+selector_class
 	= '.' basic_identifier
 	;
 
-selector_glob "selector: glob"
+selector_glob
 	= double_string
 	;
 
-selector_config "selector: config"
+selector_config
 	= '$' basic_identifier attr_operator value
+	;
+
+selector_task_result
+	= '[' basic_identifier ']'
 	;
 
 /****************************************
  * ATTRIBUTE OPERATORS
  ***************************************/
-attr_operator "attribute operator"
+attr_operator
 	= not:'!'? op:attr_operator_basic
 		{
 			if ($U(typeof not))
@@ -126,7 +139,7 @@ attr_operator "attribute operator"
 				return op;
 		}
 
-attr_operator_basic "basic attribute operator"
+attr_operator_basic
 	= '='
 		{return operator_eq}
 	/ '*='
@@ -142,12 +155,12 @@ attr_operator_basic "basic attribute operator"
 /****************************************
  * BASIC RULES
  ***************************************/
-value_list "value list"
+value_list
 	= init:value subs:(_ val:value {return val})*
 		{return [init].concat(subs)}
 	;
 
-value "value"
+value
 	= string
 	/ digits:$([0-9]+)
 		{return parseInt(digits)}
@@ -158,31 +171,31 @@ value "value"
 	/ $([a-z\-_]i [a-z0-9\-_]i* &[^a-z\-_0-9]i)
 	;
 
-basic_identifier "identifier"
+basic_identifier
 	= $([a-z\-\_]i [a-z\-_0-9]i*)
 	;
 
-string "string"
+string
 	= double_string
 	/ single_string
 	;
 
-single_string "single quoted string"
+single_string
 	= '\'' string:$(escape_sequence / [^'])* '\''
 		{return string}
 	;
 
-double_string "double quoted string"
+double_string
 	= '"' string:$(escape_sequence / [^"])* '"'
 		{return string}
 	;
 	
-escape_sequence "escape sequence"
+escape_sequence
 	= '\\' escape:escape
 		{return escape}
 	;
 
-escape "escape code"
+escape
 	= '"'
 	/ '\''
 	/ '\\'
@@ -201,20 +214,20 @@ escape "escape code"
 		{return charCode(digits, 8)}
 	;
 
-octal_digit "octal digit"
+octal_digit
 	= [0-8]
 	;
 
-hex_digit "hexadecimal digit"
+hex_digit
 	= [a-f0-9]i
 	;
 
-comment "comment"
+comment
 	= '/*' (!'*/' .)+ '*/'
 		{}
 	;
 
-_ "whitespace"
+_
 	= ([ \r\n\f\t])+
 		{}
 	;
