@@ -4,14 +4,10 @@
  */
 
 {
-	var $ = [];
-
-	var $U = function(tipo) {
-		return tipo != 'undefined';
-	}
+	// @include functions.js
 }
 
-start "ccs document"
+start
 	= document:(_? statement:statement _? {return statement})*
 		{
 			var doc = [];
@@ -30,20 +26,41 @@ start "ccs document"
 /****************************************
  * STATEMENTS
  ***************************************/
-statement "statement"
+statement
 	= comment
 	/ directive:statement_directive
 		{ return {type: 'directive', directive: directive} }
 	;
 
-statement_directive "statement: directive"
+statement_directive "directive"
 	= '@' directive:directive _? ';'
 		{ return directive }
 
 /****************************************
+ * RULE
+ ***************************************/
+rule_multiple
+	= first:rule_single
+	  other:(_? ',' _? rule:rule_single {return rule;})*
+	  	{
+	  		if ($U(typeof other))
+	  			return [first].concat(other);
+	  		return [first];
+	  	}
+
+rule_single
+	= first:selector other:(_ selector)*
+		{
+			if ($U(typeof other))
+				return [first].concat(other);
+			return [first];
+		}
+	;
+
+/****************************************
  * DIRECTIVES
  ***************************************/
-directive "directive"
+directive
 	= directive_use
 	/ directive_import
 	/ directive_vendor
@@ -58,38 +75,67 @@ directive_import "directive: import"
 		{ return {imp: imp} }
 
 directive_vendor "directive: vendor"
-= 'vendor' _ prefix:value name:(_ 'as' _ name:value {return name})?
+	= 'vendor' _ prefix:value name:(_ 'as' _ name:value {return name})?
 		{ return {prefix: prefix, alias: ($U(typeof name) ? name : null)} }
 
 /****************************************
  * SELECTOR IDENTIFIER RULES
  ***************************************/
-selector "selector"
-	= env_selector env_selector_args?
-	/ task_selector
-	/ class_selector
-	/ glob_selector
+selector
+	= selector_env selector_env_args?
+	/ selector_task
+	/ selector_class
+	/ selector_glob
 	;
 
-env_selector "environment selector"
+selector_env "selector: environment"
 	= '@' environment_token
 	;
 
-task_selector "task selector"
+selector_env_args "environment selector arguments"
+	= '(' _? value (_ value)* _? ')'
+	;
+
+selector_task "selector: task"
 	= '#' basic_identifier
 	;
 
-class_selector "class selector"
+selector_class "selector: class"
 	= '.' basic_identifier
 	;
 
-glob_selector "glob selector"
+selector_glob "selector: glob"
 	= double_string
 	;
 
-env_selector_args "environment selector arguments"
-	= '(' _? value (_ value)* _? ')'
-	; 
+selector_config "selector: config"
+	= '$' basic_identifier attr_operator value
+	;
+
+/****************************************
+ * ATTRIBUTE OPERATORS
+ ***************************************/
+attr_operator "attribute operator"
+	= not:'!'? op:attr_operator_basic
+		{
+			if ($U(typeof not))
+				return operator_not(op);
+			else
+				return op;
+		}
+
+attr_operator_basic "basic attribute operator"
+	= '='
+		{ return operator_eq; }
+	/ '*='
+		{ return operator_contains; }
+	/ '~='
+		{ return operator_inlist; }
+	/ '^='
+		{ return operator_begins; }
+	/ '$='
+		{ return operator_ends; }
+	;
 
 /****************************************
  * BASIC RULES
@@ -101,7 +147,7 @@ value_list "value list"
 
 value "value"
 	= string
-	/ digits:$([0-9]+ &[^0-9])
+	/ digits:$([0-9]+)
 		{return parseInt(digits)}
 	/ ('true' / 'yes' / 'on')
 		{return true}
