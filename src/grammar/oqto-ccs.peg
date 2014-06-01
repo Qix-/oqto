@@ -19,11 +19,6 @@ start
 	;
 
 /****************************************
- * INCLUSIONS
- ***************************************/
-// @include ./tokens.peg
-
-/****************************************
  * STATEMENTS
  ***************************************/
 statement
@@ -89,7 +84,14 @@ selector
 	;
 
 selector_env "selector: environment"
-	= '@' environment_token
+	= '@' selector_env_token
+	;
+
+selector_env_token "environment selector token"
+	= 'arch'		/* arch */
+	/ 'os'			/* platform */
+	/ 'system'		/* type */
+	/ 'release'		/* release */
 	;
 
 selector_env_args "environment selector arguments"
