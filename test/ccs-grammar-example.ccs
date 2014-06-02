@@ -1,0 +1,12 @@
+#java {
+	java-classpath:
+		'.';
+
+	@arch(win32) {
+		java-classpath:> "C:\\java-classes";
+	}
+
+	@arch(~linux) {
+		java-classpath:> "/usr/java-classes";
+	}
+}

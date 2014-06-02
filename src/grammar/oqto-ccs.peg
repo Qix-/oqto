@@ -48,20 +48,26 @@ rule
 
 rule_node
 	= inner_statement
-	/ chrs:[^\}]+ {return chrs.join('')}
+	/ configuration
 	;
 
 /****************************************
  * CONFIGURATION VALUES
  ***************************************/
+configuration
+	= value:configuration_value _? ';'
+		{return value}
+	;
+
 configuration_value
 	= configuration_value_partial
 	/ configuration_value_single
 	;
 
 configuration_value_single
-	= name:basic_identifier ':' values:(_ value:value {return value})+
-		{return {name: name, values: values}}
+	= name:basic_identifier op:configuration_operator
+	  values:(_ value:value {return value})+
+		{return {name: name, values: values, append: op}}
 	;
 
 configuration_value_partial
@@ -76,9 +82,9 @@ configuration_value_partial
 	;
 
 configuration_value_partial_entry
-	= postfix:basic_identifier ':' _?
+	= postfix:basic_identifier op:configuration_operator _?
 	  values:configuration_value_partial_entry_values
-		{return {postfix: postfix, values: values}}
+		{return {postfix: postfix, values: values, append: op}}
 	;
 
 configuration_value_partial_entry_values
@@ -98,6 +104,13 @@ configuration_value_partial_entry_value
 
 configuration_value_partial_prefix
 	= $(('-'+)? ([a-z0-9\_]+ '-')+)
+	;
+
+configuration_operator
+	= ':>'
+		{return true}
+	/ ':'
+		{return false}
 	;
 
 /****************************************
@@ -245,11 +258,6 @@ operator_positive
 /****************************************
  * BASIC RULES
  ***************************************/
-value_list
-	= init:value subs:(_ val:value {return val})*
-		{return [init].concat(subs)}
-	;
-
 value
 	= string
 	/ digits:$([0-9]+)
@@ -316,7 +324,6 @@ comment
 	= '/*' (!'*/' .)+ '*/'
 		{}
 	;
-
 _
 	= ([ \r\n\f\t])+
 		{}
