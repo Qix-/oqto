@@ -29,6 +29,12 @@ var flatten = function(arr, src) {
 	return src;
 };
 
+var regReplace = function(regex, replacement) {
+	return function(str) {
+		return str.replace(regex, replacement);
+	};
+};
+
 /****************************************
  * OPERATOR FUNCTIONS
  ***************************************/

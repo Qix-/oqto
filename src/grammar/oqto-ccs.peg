@@ -56,7 +56,31 @@ rule_node
 		}
 	/ log:comment_log
 		{return {type: 'log', log: log}}
+	/ call:call
+		{return {type: 'call', call: call}}
 	;
+
+/****************************************
+ * CALLS
+ ***************************************/
+call
+	= '~' name:basic_identifier _? config:(';' / call_config)
+		{return {name: name, config: $U(config) ? config : []}}
+	;
+
+call_config
+	= '{' _? list:call_config_list _? '}'
+		{return list}
+	;
+
+call_config_list
+	= first:configuration
+	  other:(_ config:configuration {return config})*
+		{
+			if ($U(other))
+				return [first].concat(other);
+			return [first];
+		}
 
 /****************************************
  * COMMENT-LOGS
@@ -71,17 +95,17 @@ comment_log
 	;
 
 comment_log_info
-	= '`' message:comment_log_message
+	= '`' __? message:comment_log_message
 		{return message}
 	;
 
 comment_log_warn
-	= '?' message:comment_log_message
+	= '?' __? message:comment_log_message
 		{return message}
 	;
 
 comment_log_error
-	= '!' message:comment_log_message
+	= '!' __? message:comment_log_message
 		{return message}
 	;
 
@@ -209,12 +233,23 @@ selector
 		{return {type: 'config', selector: selector}}
 	/ selector:selector_task_result
 		{return {type: 'result', selector: selector}}
-	/ selector_all
-		{return {type: 'all'}}
+	/ selector:selector_all
+		{return {type: 'all', selector: selector}}
 	;
 
 selector_all
-	= '*'
+	= '*' pseudos:selector_pseudo*
+		{return {psuedo: $U(typeof pseudos) ? pseudos : []}}
+	;
+
+selector_pseudo
+	= '::' token:selector_pseudo_token
+		{return token}
+	;
+
+selector_pseudo_token
+	= 'after'
+	/ 'before'
 	;
 
 selector_env
@@ -294,6 +329,36 @@ operator_positive
 	;
 
 /****************************************
+ * REGEX
+ ***************************************/
+regex
+	= '/' regex:regex_content
+	  '/' replacer:regex_replacer_content
+	  '/' modifiers:$[gmiy]*
+	  	{
+	  		regex = new RegExp(regex, modifiers);
+	  		if ($U(typeof replacer) && replacer != null
+	  			&& replacer != '')
+	  			return regReplace(regex, replacer)
+	  		else
+	  			return regex;
+	  	}
+	;
+
+regex_replacer_content
+	=  replacer:$(escape_sequence / regex_replacer_delim / [^\/\r\n\f])*
+	;
+
+regex_replacer_delim
+	= '\\' group:$[0-9]+
+		{return '$' + group}
+	;
+
+regex_content
+	= regex:$(escape_sequence / [^\/\r\n\f])*
+	;
+
+/****************************************
  * BASIC RULES
  ***************************************/
 value
@@ -304,6 +369,7 @@ value
 		{return true}
 	/ ('false' / 'no' / 'off')
 		{return false}
+	/ regex
 	/ basic_identifier
 	;
 
@@ -318,12 +384,12 @@ string
 
 single_string
 	= '\'' string:$(escape_sequence / [^'])* '\''
-		{return string}
+		{return $U(string) ? string : ''}
 	;
 
 double_string
 	= '"' string:$(escape_sequence / [^"])* '"'
-		{return string}
+		{return $U(string) ? string : ''}
 	;
 	
 escape_sequence
