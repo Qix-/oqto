@@ -7,12 +7,23 @@
  * GLOBAL FUNCTIONS
  ***************************************/
 var $U = function(tipo) {
-	return tipo != 'undefined';
+	return tipo != 'undefined' && tipo != null;
 };
 
 var charCode = function(digits, radix) {
 	return String.fromCharCode(
 		parseInt(digits, radix));
+};
+
+var flatten = function(arr, src) {
+	for (var i = 0, len = arr.length; i < len; i++) {
+		if (Array.isArray(arr[i]))
+			flatten(arr[i], src);
+		else
+			src.push(arr[i]);
+	}
+
+	return src;
 };
 
 /****************************************

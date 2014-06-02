@@ -14,7 +14,7 @@ start
 			for (var i = 0, len = document.length; i < len; i++)
 				if (document[i] != undefined)
 					doc.push(document[i]);
-			return doc;
+			return flatten(doc, []);
 		}
 	;
 
@@ -22,9 +22,15 @@ start
  * STATEMENTS
  ***************************************/
 statement
-	= comment
-	/ directive:statement_directive
+	= directive:statement_directive
 		{return {type: 'directive', directive: directive}}
+	/ inner_statement
+	;
+
+inner_statement
+	= comment
+	/ rule:rule
+		{return {type: 'rule', rule: rule}}
 	;
 
 statement_directive
@@ -34,9 +40,65 @@ statement_directive
 /****************************************
  * RULES
  ***************************************/
-rule_node
-	= 
+rule
+	= conditionals:conditional_multiple _?
+	  '{' _? nodes:(node:rule_node _? {return node})* '}'
+	 	{return {conditionals: conditionals,
+	 		nodes: $U(typeof nodes) ? nodes : []}}
 
+rule_node
+	= inner_statement
+	/ chrs:[^\}]+ {return chrs.join('')}
+	;
+
+/****************************************
+ * CONFIGURATION VALUES
+ ***************************************/
+configuration_value
+	= configuration_value_partial
+	/ configuration_value_single
+	;
+
+configuration_value_single
+	= name:basic_identifier ':' values:(_ value:value {return value})+
+		{return {name: name, values: values}}
+	;
+
+configuration_value_partial
+	= prefix:configuration_value_partial_prefix
+	  entries:(_ entry:configuration_value_partial_entry {return entry})+
+		{
+			return entries.map(function(entry){
+				return {name: prefix + entry.postfix,
+					values: entry.values};
+			});
+		}
+	;
+
+configuration_value_partial_entry
+	= postfix:basic_identifier ':' _?
+	  values:configuration_value_partial_entry_values
+		{return {postfix: postfix, values: values}}
+	;
+
+configuration_value_partial_entry_values
+	= first:configuration_value_partial_entry_value
+	  other:(_ value:configuration_value_partial_entry_value {return value})*
+		{
+			if ($U(other))
+				return [first].concat(other);
+			return [first];
+		}
+	;
+
+configuration_value_partial_entry_value
+	= !(value ':') value:value
+		{return value}
+	;
+
+configuration_value_partial_prefix
+	= $(('-'+)? ([a-z0-9\_]+ '-')+)
+	;
 
 /****************************************
  * CONDITIONALS
@@ -51,7 +113,7 @@ conditional_multiple
 	  	}
 
 conditional_single
-	= first:selector other:(_ selector)*
+	= first:selector other:(_ selector:selector {return selector})*
 		{
 			if ($U(typeof other))
 				return [first].concat(other);
@@ -84,16 +146,29 @@ directive_vendor
  * SELECTOR IDENTIFIER RULES
  ***************************************/
 selector
-	= selector_env selector_env_args?
-	/ selector_task
-	/ selector_class
-	/ selector_glob
-	/ selector_config
-	/ selector_task_result
+	= selector:selector_env
+		{return {type: 'env', selector: selector}}
+	/ selector:selector_task
+		{return {type: 'task', selector: selector}}
+	/ selector:selector_class
+		{return {type: 'class', selector: selector}}
+	/ selector:selector_glob
+		{return {type: 'glob', selector: selector}}
+	/ selector:selector_config
+		{return {type: 'config', selector: selector}}
+	/ selector:selector_task_result
+		{return {type: 'result', selector: selector}}
+	/ selector_all
+		{return {type: 'all'}}
+	;
+
+selector_all
+	= '*'
 	;
 
 selector_env
-	= '@' selector_env_token
+	= '@' token:selector_env_token args:selector_env_args?
+		{return {name: token, args: args != null ? args : []}}
 	;
 
 selector_env_token
@@ -104,52 +179,67 @@ selector_env_token
 	;
 
 selector_env_args
-	= '(' _? value (_ value)* _? ')'
+	= '(' _? first:selector_env_arg
+	  other:(_ value:selector_env_arg {return value})* _? ')'
+		{
+			if ($U(other))
+				return [first].concat(other);
+			return [first];
+		}
+	;
+
+selector_env_arg
+	= operator:operator value:value
+		{return {operator: operator, arg: value}}
 	;
 
 selector_task
-	= '#' basic_identifier
+	= '#' name:basic_identifier
+		{return {name: name}}
 	;
 
 selector_class
-	= '.' basic_identifier
+	= '.' name:basic_identifier
+		{return {name: name}}
 	;
 
 selector_glob
-	= double_string
+	= string:double_string
+		{return {glob: string}}
 	;
 
 selector_config
-	= '$' basic_identifier attr_operator value
+	= '$' name:basic_identifier
+	  operator:operator '=' value:value
+		{return {name: name, operator: operator, value: value}}
 	;
 
 selector_task_result
-	= '[' basic_identifier ']'
+	= '[' name:basic_identifier ']'
+		{return {name: name}}
 	;
 
 /****************************************
- * ATTRIBUTE OPERATORS
+ * OPERATORS
  ***************************************/
-attr_operator
-	= not:'!'? op:attr_operator_basic
+operator
+	= not:'!'? op:operator_positive
 		{
 			if ($U(typeof not))
 				return operator_not(op);
-			else
-				return op;
+			return op;
 		}
 
-attr_operator_basic
-	= '='
-		{return operator_eq}
-	/ '*='
+operator_positive
+	= '*'
 		{return operator_contains}
-	/ '~='
+	/ '~'
 		{return operator_inlist}
-	/ '^='
+	/ '^'
 		{return operator_begins}
-	/ '$='
+	/ '$'
 		{return operator_ends}
+	/	{return operator_eq}
 	;
 
 /****************************************
@@ -168,7 +258,7 @@ value
 		{return true}
 	/ ('false' / 'no' / 'off')
 		{return false}
-	/ $([a-z\-_]i [a-z0-9\-_]i* &[^a-z\-_0-9]i)
+	/ basic_identifier
 	;
 
 basic_identifier
