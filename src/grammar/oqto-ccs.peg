@@ -22,7 +22,7 @@ start
  * STATEMENTS
  ***************************************/
 statement
-	= directive:statement_directive
+	= directive:directive
 		{return {type: 'directive', directive: directive}}
 	/ inner_statement
 	;
@@ -32,10 +32,6 @@ inner_statement
 	/ rule:rule
 		{return {type: 'rule', rule: rule}}
 	;
-
-statement_directive
-	= '@' directive:directive _? ';'
-		{return directive}
 
 /****************************************
  * RULES
@@ -209,9 +205,16 @@ conditional_single
  * DIRECTIVES
  ***************************************/
 directive
-	= directive_use
-	/ directive_import
-	/ directive_vendor
+	= '@' directive:directive_content _? ';'
+		{return directive}
+ 
+directive_content
+	= directive:directive_use
+		{return {name: 'use', directive: directive}}
+	/ directive:directive_import
+		{return {name: 'import', directive: directive}}
+	/ directive:directive_vendor
+		{return {name: 'vendor', directive: directive}}
 	;
 
 directive_use
