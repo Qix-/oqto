@@ -16,6 +16,9 @@ var charCode = function(digits, radix) {
 };
 
 var flatten = function(arr, src) {
+	if (typeof src == 'undefined' || src == null)
+		src = [];
+
 	for (var i = 0, len = arr.length; i < len; i++) {
 		if (Array.isArray(arr[i]))
 			flatten(arr[i], src);

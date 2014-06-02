@@ -14,7 +14,7 @@ start
 			for (var i = 0, len = document.length; i < len; i++)
 				if (document[i] != undefined)
 					doc.push(document[i]);
-			return flatten(doc, []);
+			return flatten(doc);
 		}
 	;
 
@@ -44,11 +44,49 @@ rule
 	= conditionals:conditional_multiple _?
 	  '{' _? nodes:(node:rule_node _? {return node})* '}'
 	 	{return {conditionals: conditionals,
-	 		nodes: $U(typeof nodes) ? nodes : []}}
+	 		nodes: $U(typeof nodes) ? flatten(nodes) : []}}
 
 rule_node
 	= inner_statement
-	/ configuration
+	/ node:configuration
+		{
+			return flatten([node]).map(function(config) {
+				return {type: 'config', config: config};
+			});
+		}
+	/ log:comment_log
+		{return {type: 'log', log: log}}
+	;
+
+/****************************************
+ * COMMENT-LOGS
+ ***************************************/
+comment_log
+	= log:comment_log_info
+		{return {level: 'info', message: log}}
+	/ log:comment_log_warn
+		{return {level: 'warn', message: log}}
+	/ log:comment_log_error
+		{return {level: 'error', message: log}}
+	;
+
+comment_log_info
+	= '`' message:comment_log_message
+		{return message}
+	;
+
+comment_log_warn
+	= '?' message:comment_log_message
+		{return message}
+	;
+
+comment_log_error
+	= '!' message:comment_log_message
+		{return message}
+	;
+
+comment_log_message
+	= $[^\n\r\f]+
 	;
 
 /****************************************

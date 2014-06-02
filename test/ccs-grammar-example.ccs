@@ -9,4 +9,12 @@
 	@arch(~linux) {
 		java-classpath:> "/usr/java-classes";
 	}
+
+	java-
+		force: yes					/* Force output? */
+		ignore-annotations: yes		/* Ignore annotations? */
+		;
+
+	` this is awesome!
+	? this is a warning!
 }
