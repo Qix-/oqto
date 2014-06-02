@@ -75,7 +75,7 @@ call_config
 
 call_config_list
 	= first:configuration
-	  other:(_ config:configuration {return config})*
+	  other:(_? config:configuration {return config})*
 		{
 			if ($U(other))
 				return [first].concat(other);
@@ -95,22 +95,22 @@ comment_log
 	;
 
 comment_log_info
-	= '`' __? message:comment_log_message
+	= '`' __? message:comment_log_message ';'?
 		{return message}
 	;
 
 comment_log_warn
-	= '?' __? message:comment_log_message
+	= '?' __? message:comment_log_message ';'?
 		{return message}
 	;
 
 comment_log_error
-	= '!' __? message:comment_log_message
+	= '!' __? message:comment_log_message ';'?
 		{return message}
 	;
 
 comment_log_message
-	= $[^\n\r\f]+
+	= $[^\n\r\f;]+
 	;
 
 /****************************************
@@ -127,9 +127,18 @@ configuration_value
 	;
 
 configuration_value_single
-	= name:basic_identifier op:configuration_operator
-	  values:(_ value:value {return value})+
+	= name:basic_identifier op:configuration_operator _?
+	  values:configuration_value_single_list
 		{return {name: name, values: values, append: op}}
+	;
+
+configuration_value_single_list
+	= first:value other:(_? value)*
+		{
+			if ($U(other))
+				return [first].concat(other);
+			return [first];
+		}
 	;
 
 configuration_value_partial
